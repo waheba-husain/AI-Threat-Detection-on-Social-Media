@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelAI — Emergency Contacts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080c14;--bg2:#0d1320;--bg3:#111827;--accent:#38bdf8;--danger:#f43f5e;--success:#10b981;--warn:#f59e0b;--text:#e2e8f0;--muted:#64748b;--border:rgba(56,189,248,0.15);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;bottom:0;}
+.sidebar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;padding:0 1.5rem 2rem;}
+.sidebar-logo span{color:var(--accent);}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;border-left:3px solid transparent;}
+.nav-item:hover{color:var(--text);background:rgba(56,189,248,.05);}
+.nav-item.active{color:var(--accent);background:rgba(56,189,248,.08);border-left-color:var(--accent);}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:1.5rem;}
+.user-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.75rem;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#080c14;}
+.user-info .name{font-size:.85rem;font-weight:600;color:#fff;}
+.user-info .role{font-size:.75rem;color:var(--muted);}
+.main{margin-left:240px;flex:1;padding:2rem;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;margin-bottom:.3rem;}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem;}
+.alert-banner{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);border-radius:10px;padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;color:var(--danger);font-size:.9rem;}
+.section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#fff;margin-bottom:1rem;margin-top:2rem;}
+.contacts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.contact-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:all .2s;}
+.contact-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.contact-icon{font-size:1.8rem;margin-bottom:.8rem;}
+.contact-name{font-family:'Syne',sans-serif;font-weight:700;color:#fff;font-size:.95rem;margin-bottom:.3rem;}
+.contact-desc{font-size:.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.5;}
+.contact-number{display:inline-flex;align-items:center;gap:.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:.4rem .9rem;font-size:.85rem;color:var(--accent);font-weight:600;text-decoration:none;transition:all .2s;}
+.contact-number:hover{background:var(--accent);color:#080c14;border-color:var(--accent);}
+.tag{display:inline-block;font-size:.7rem;font-weight:600;padding:.15rem .6rem;border-radius:100px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;}
+.tag-crisis{background:rgba(244,63,94,.15);color:var(--danger);}
+.tag-mental{background:rgba(56,189,248,.15);color:var(--accent);}
+.tag-support{background:rgba(16,185,129,.15);color:var(--success);}
+.tag-india{background:rgba(245,158,11,.15);color:var(--warn);}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">Sentinel<span>AI</span></div>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+  <a class="nav-item" href="detect.html"><span class="nav-icon">🎯</span>Threat Detection</a>
+  <a class="nav-item" href="agent.html"><span class="nav-icon">🤖</span>AI Agent</a>
+  <a class="nav-item active" href="emergency.html"><span class="nav-icon">🆘</span>Emergency Contacts</a>
+  <a class="nav-item" href="booking.html"><span class="nav-icon">📅</span>Book a Session</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar">U</div>
+      <div class="user-info"><div class="name">User</div><div class="role">Free Plan</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title">Emergency Contacts</div>
+  <div class="page-sub">Immediate help is available. You are not alone.</div>
+
+  <div class="alert-banner">
+    🚨 If someone is in immediate danger, call <strong>112</strong> (India Emergency) or your local emergency number immediately.
+  </div>
+
+  <div class="section-title">🇮🇳 India — Crisis Helplines</div>
+  <div class="contacts-grid">
+    <div class="contact-card">
+      <div class="contact-icon">🧠</div>
+      <div class="tag tag-india">India</div>
+      <div class="contact-name">iCall — TISS</div>
+      <div class="contact-desc">Psychosocial helpline offering counselling for mental health issues, stress, and emotional difficulties.</div>
+      <a class="contact-number" href="tel:9152987821">📞 9152987821</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">💙</div>
+      <div class="tag tag-crisis">Suicide Crisis</div>
+      <div class="contact-name">Vandrevala Foundation</div>
+      <div class="contact-desc">24/7 mental health helpline available in multiple languages across India.</div>
+      <a class="contact-number" href="tel:18602662345">📞 1860-2662-345</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">🌸</div>
+      <div class="tag tag-india">India</div>
+      <div class="contact-name">Snehi Foundation</div>
+      <div class="contact-desc">Emotional support and suicide prevention helpline for individuals in distress.</div>
+      <a class="contact-number" href="tel:044-24640050">📞 044-24640050</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">🤝</div>
+      <div class="tag tag-mental">Mental Health</div>
+      <div class="contact-name">NIMHANS Helpline</div>
+      <div class="contact-desc">National Institute of Mental Health and Neurosciences — expert mental health support.</div>
+      <a class="contact-number" href="tel:080-46110007">📞 080-46110007</a>
+    </div>
+  </div>
+
+  <div class="section-title">🌍 International Helplines</div>
+  <div class="contacts-grid">
+    <div class="contact-card">
+      <div class="contact-icon">🇺🇸</div>
+      <div class="tag tag-crisis">USA</div>
+      <div class="contact-name">988 Suicide & Crisis Lifeline</div>
+      <div class="contact-desc">Call or text 988 for free, confidential support for people in distress in the United States.</div>
+      <a class="contact-number" href="tel:988">📞 988</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">🇬🇧</div>
+      <div class="tag tag-support">UK</div>
+      <div class="contact-name">Samaritans UK</div>
+      <div class="contact-desc">Available 24/7 to listen to anyone struggling to cope with whatever life throws at them.</div>
+      <a class="contact-number" href="tel:116123">📞 116 123</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">🌐</div>
+      <div class="tag tag-mental">Global</div>
+      <div class="contact-name">Crisis Text Line</div>
+      <div class="contact-desc">Text HOME to 741741 to connect with a crisis counsellor — available in US, UK, Canada, Ireland.</div>
+      <a class="contact-number" href="sms:741741">💬 Text HOME to 741741</a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-icon">🆘</div>
+      <div class="tag tag-crisis">Emergency</div>
+      <div class="contact-name">International Emergency</div>
+      <div class="contact-desc">Universal emergency number accepted in most countries via mobile networks.</div>
+      <a class="contact-number" href="tel:112">📞 112</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

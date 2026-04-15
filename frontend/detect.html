@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelAI — Threat Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080c14;--bg2:#0d1320;--bg3:#111827;--accent:#38bdf8;--danger:#f43f5e;--success:#10b981;--warn:#f59e0b;--text:#e2e8f0;--muted:#64748b;--border:rgba(56,189,248,0.15);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;bottom:0;}
+.sidebar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;padding:0 1.5rem 2rem;}
+.sidebar-logo span{color:var(--accent);}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;border-left:3px solid transparent;}
+.nav-item:hover{color:var(--text);background:rgba(56,189,248,.05);}
+.nav-item.active{color:var(--accent);background:rgba(56,189,248,.08);border-left-color:var(--accent);}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:1.5rem;}
+.user-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.75rem;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#080c14;}
+.user-info .name{font-size:.85rem;font-weight:600;color:#fff;}
+.user-info .role{font-size:.75rem;color:var(--muted);}
+.main{margin-left:240px;flex:1;padding:2rem;max-width:900px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;margin-bottom:.3rem;}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#fff;margin-bottom:1rem;}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;resize:vertical;min-height:140px;outline:none;transition:border-color .2s;line-height:1.6;}
+textarea:focus{border-color:var(--accent);}
+textarea::placeholder{color:var(--muted);}
+.btn-row{display:flex;gap:1rem;margin-top:1rem;align-items:center;}
+.btn-analyse{background:var(--accent);color:#080c14;border:none;border-radius:8px;padding:.8rem 2rem;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;box-shadow:0 0 20px rgba(56,189,248,.25);}
+.btn-analyse:hover{background:#fff;}
+.btn-analyse:disabled{opacity:.5;cursor:not-allowed;}
+.btn-clear{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:.8rem 1.5rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-clear:hover{border-color:var(--danger);color:var(--danger);}
+.char-count{color:var(--muted);font-size:.8rem;margin-left:auto;}
+
+/* RESULT */
+.result-card{display:none;}
+.result-card.show{display:block;}
+.prediction-badge{display:inline-flex;align-items:center;gap:.6rem;padding:.6rem 1.2rem;border-radius:100px;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:1.2rem;}
+.pred-hate{background:rgba(244,63,94,.15);color:var(--danger);border:1px solid rgba(244,63,94,.3);}
+.pred-suicide{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.3);}
+.pred-extremism{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);}
+.pred-fake_news{background:rgba(100,116,139,.15);color:var(--muted);border:1px solid rgba(100,116,139,.3);}
+.confidence-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;}
+.conf-label{color:var(--muted);font-size:.85rem;width:80px;}
+.conf-track{flex:1;background:var(--bg3);border-radius:100px;height:10px;}
+.conf-fill{height:100%;border-radius:100px;background:var(--accent);transition:width .8s ease;}
+.conf-val{font-weight:700;color:#fff;font-size:.9rem;width:50px;text-align:right;}
+.scores-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;}
+.score-item{background:var(--bg3);border-radius:8px;padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center;}
+.score-name{font-size:.82rem;color:var(--muted);text-transform:capitalize;}
+.score-val{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#fff;}
+.loading{display:none;text-align:center;padding:2rem;color:var(--muted);}
+.loading.show{display:block;}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:.8rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-msg{color:var(--danger);font-size:.85rem;margin-top:.5rem;display:none;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">Sentinel<span>AI</span></div>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+  <a class="nav-item active" href="detect.html"><span class="nav-icon">🎯</span>Threat Detection</a>
+  <a class="nav-item" href="agent.html"><span class="nav-icon">🤖</span>AI Agent</a>
+  <a class="nav-item" href="emergency.html"><span class="nav-icon">🆘</span>Emergency Contacts</a>
+  <a class="nav-item" href="booking.html"><span class="nav-icon">📅</span>Book a Session</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar">U</div>
+      <div class="user-info"><div class="name">User</div><div class="role">Free Plan</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title">Threat Detection</div>
+  <div class="page-sub">Analyse any text for hate speech, extremism, suicide risk, or misinformation.</div>
+
+  <div class="card">
+    <div class="card-title">Enter Text to Analyse</div>
+    <textarea id="input-text" placeholder="Paste a social media post, comment, message, or any text here..." oninput="updateCount()"></textarea>
+    <div class="btn-row">
+      <button class="btn-analyse" id="analyse-btn" onclick="analyse()">Analyse Text →</button>
+      <button class="btn-clear" onclick="clearAll()">Clear</button>
+      <span class="char-count" id="char-count">0 characters</span>
+    </div>
+    <div class="error-msg" id="error-msg">⚠ Could not connect to API. Make sure Flask server is running on port 5000.</div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div>Analysing with RoBERTa...</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="card result-card" id="result-card">
+    <div class="card-title">Detection Result</div>
+    <div id="pred-badge" class="prediction-badge"></div>
+    <div class="confidence-row">
+      <span class="conf-label">Confidence</span>
+      <div class="conf-track"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+      <span class="conf-val" id="conf-val">0%</span>
+    </div>
+    <div class="card-title" style="font-size:.85rem;margin-bottom:.75rem;">All Category Scores</div>
+    <div class="scores-grid" id="scores-grid"></div>
+  </div>
+</main>
+
+<script>
+const API = 'http://localhost:5000/predict';
+
+function updateCount(){
+  const t = document.getElementById('input-text').value;
+  document.getElementById('char-count').textContent = t.length + ' characters';
+}
+
+function clearAll(){
+  document.getElementById('input-text').value='';
+  document.getElementById('char-count').textContent='0 characters';
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('error-msg').style.display='none';
+  updateCount();
+}
+
+async function analyse(){
+  const text = document.getElementById('input-text').value.trim();
+  if(!text){alert('Please enter some text first.');return;}
+  document.getElementById('analyse-btn').disabled=true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('error-msg').style.display='none';
+  try{
+    const res = await fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})
+    });
+    const data = await res.json();
+    showResult(data);
+  }catch(e){
+    document.getElementById('error-msg').style.display='block';
+  }finally{
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('analyse-btn').disabled=false;
+  }
+}
+
+function showResult(data){
+  const pred  = data.prediction;
+  const conf  = data.confidence;
+  const scores= data.scores;
+
+  const labels = {'hate_speech':'⚠ Hate Speech','suicide':'🆘 Suicide Risk','extremism':'🔴 Extremism','fake_news':'📰 Fake News'};
+  const badge = document.getElementById('pred-badge');
+  badge.textContent = labels[pred] || pred;
+  badge.className = 'prediction-badge pred-'+pred;
+
+  document.getElementById('conf-fill').style.width = conf+'%';
+  document.getElementById('conf-val').textContent  = conf+'%';
+
+  const grid = document.getElementById('scores-grid');
+  grid.innerHTML = Object.entries(scores).map(([k,v])=>
+    `<div class="score-item"><span class="score-name">${k.replace('_',' ')}</span><span class="score-val">${v}%</span></div>`
+  ).join('');
+
+  document.getElementById('result-card').classList.add('show');
+}
+</script>
+</body>
+</html>

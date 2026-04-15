@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelAI — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080c14;--bg2:#0d1320;--bg3:#111827;--accent:#38bdf8;--danger:#f43f5e;--success:#10b981;--warn:#f59e0b;--text:#e2e8f0;--muted:#64748b;--border:rgba(56,189,248,0.15);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;bottom:0;}
+.sidebar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;padding:0 1.5rem 2rem;}
+.sidebar-logo span{color:var(--accent);}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;cursor:pointer;border-left:3px solid transparent;}
+.nav-item:hover{color:var(--text);background:rgba(56,189,248,.05);}
+.nav-item.active{color:var(--accent);background:rgba(56,189,248,.08);border-left-color:var(--accent);}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:1.5rem;}
+.user-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.75rem;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#080c14;}
+.user-info .name{font-size:.85rem;font-weight:600;color:#fff;}
+.user-info .role{font-size:.75rem;color:var(--muted);}
+
+/* MAIN */
+.main{margin-left:240px;flex:1;padding:2rem;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;}
+.topbar-right{display:flex;gap:1rem;align-items:center;}
+.badge-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.5rem 1rem;color:var(--muted);font-size:.85rem;cursor:pointer;transition:all .2s;}
+.badge-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.stat-card .label{font-size:.78rem;color:var(--muted);font-weight:500;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em;}
+.stat-card .value{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;}
+.stat-card .change{font-size:.78rem;margin-top:.3rem;}
+.up{color:var(--success);}
+.down{color:var(--danger);}
+
+/* GRID */
+.content-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#fff;margin-bottom:1.2rem;}
+
+/* CHART BARS */
+.bar-chart{display:flex;flex-direction:column;gap:.8rem;}
+.bar-row{display:flex;align-items:center;gap:.8rem;}
+.bar-label{font-size:.8rem;color:var(--muted);width:90px;text-align:right;}
+.bar-track{flex:1;background:var(--bg3);border-radius:100px;height:8px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:100px;transition:width 1s ease;}
+.bar-val{font-size:.8rem;color:var(--text);width:40px;}
+
+/* RECENT LIST */
+.threat-list{display:flex;flex-direction:column;gap:.75rem;}
+.threat-item{display:flex;align-items:center;gap:1rem;padding:.8rem;background:var(--bg3);border-radius:8px;border:1px solid transparent;transition:border-color .2s;}
+.threat-item:hover{border-color:var(--border);}
+.threat-badge{padding:.25rem .7rem;border-radius:100px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.hate{background:rgba(244,63,94,.15);color:var(--danger);}
+.suicide{background:rgba(245,158,11,.15);color:var(--warn);}
+.extremism{background:rgba(239,68,68,.15);color:#ef4444;}
+.fake{background:rgba(100,116,139,.15);color:var(--muted);}
+.threat-text{flex:1;font-size:.85rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.threat-conf{font-size:.78rem;color:var(--muted);}
+.threat-time{font-size:.75rem;color:var(--muted);}
+
+.full-width{grid-column:1/-1;}
+.detect-btn{background:var(--accent);color:#080c14;border:none;border-radius:8px;padding:.7rem 1.5rem;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s;}
+.detect-btn:hover{background:#fff;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">Sentinel<span>AI</span></div>
+  <a class="nav-item active" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+  <a class="nav-item" href="detect.html"><span class="nav-icon">🎯</span>Threat Detection</a>
+  <a class="nav-item" href="agent.html"><span class="nav-icon">🤖</span>AI Agent</a>
+  <a class="nav-item" href="emergency.html"><span class="nav-icon">🆘</span>Emergency Contacts</a>
+  <a class="nav-item" href="booking.html"><span class="nav-icon">📅</span>Book a Session</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar">U</div>
+      <div class="user-info">
+        <div class="name">User</div>
+        <div class="role">Free Plan</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">Dashboard</div>
+    <div class="topbar-right">
+      <button class="badge-btn" onclick="window.location.href='detect.html'">+ New Detection</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Total Scans</div>
+      <div class="value">142</div>
+      <div class="change up">↑ 12 this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Threats Found</div>
+      <div class="value">38</div>
+      <div class="change down">↑ 5 from last week</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Safe Content</div>
+      <div class="value">104</div>
+      <div class="change up">↑ 73% safe rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Confidence</div>
+      <div class="value">81%</div>
+      <div class="change up">↑ model accuracy</div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- BAR CHART -->
+    <div class="card">
+      <div class="card-title">Threats by Category</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Hate Speech</div>
+          <div class="bar-track"><div class="bar-fill" style="width:72%;background:var(--danger);"></div></div>
+          <div class="bar-val">18</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Extremism</div>
+          <div class="bar-track"><div class="bar-fill" style="width:44%;background:#ef4444;"></div></div>
+          <div class="bar-val">11</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Suicide Risk</div>
+          <div class="bar-track"><div class="bar-fill" style="width:28%;background:var(--warn);"></div></div>
+          <div class="bar-val">7</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Fake News</div>
+          <div class="bar-track"><div class="bar-fill" style="width:8%;background:var(--muted);"></div></div>
+          <div class="bar-val">2</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK DETECT -->
+    <div class="card">
+      <div class="card-title">Quick Detection</div>
+      <textarea id="quick-text" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.75rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;resize:none;height:100px;outline:none;" placeholder="Paste text to analyse..."></textarea>
+      <div style="margin-top:.8rem;display:flex;justify-content:flex-end;">
+        <button class="detect-btn" onclick="window.location.href='detect.html'">Analyse →</button>
+      </div>
+    </div>
+
+    <!-- RECENT THREATS -->
+    <div class="card full-width">
+      <div class="card-title">Recent Detections</div>
+      <div class="threat-list">
+        <div class="threat-item">
+          <span class="threat-badge hate">Hate Speech</span>
+          <span class="threat-text">i hate everyone in this group they should all be removed</span>
+          <span class="threat-conf">91.4%</span>
+          <span class="threat-time">2m ago</span>
+        </div>
+        <div class="threat-item">
+          <span class="threat-badge extremism">Extremism</span>
+          <span class="threat-text">society sucks because whatever do not kill enough people like them</span>
+          <span class="threat-conf">78.2%</span>
+          <span class="threat-time">15m ago</span>
+        </div>
+        <div class="threat-item">
+          <span class="threat-badge suicide">Suicide Risk</span>
+          <span class="threat-text">i have been feeling hopeless for months and i don't see a way out</span>
+          <span class="threat-conf">65.1%</span>
+          <span class="threat-time">1h ago</span>
+        </div>
+        <div class="threat-item">
+          <span class="threat-badge fake">Fake News</span>
+          <span class="threat-text">share on facebook republicans in congress and perhaps across the nation are suffering</span>
+          <span class="threat-conf">55.8%</span>
+          <span class="threat-time">3h ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
