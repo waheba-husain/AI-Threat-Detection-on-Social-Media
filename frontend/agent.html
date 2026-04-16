@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelAI — ARIA Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080c14;--bg2:#0d1320;--bg3:#111827;--accent:#38bdf8;--danger:#f43f5e;--success:#10b981;--warn:#f59e0b;--text:#e2e8f0;--muted:#64748b;--border:rgba(56,189,248,0.15);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:fixed;top:0;bottom:0;}
+.sidebar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;padding:0 1.5rem 2rem;}
+.sidebar-logo span{color:var(--accent);}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;border-left:3px solid transparent;}
+.nav-item:hover{color:var(--text);background:rgba(56,189,248,.05);}
+.nav-item.active{color:var(--accent);background:rgba(56,189,248,.08);border-left-color:var(--accent);}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:1.5rem;}
+.user-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.75rem;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#080c14;}
+.user-info .name{font-size:.85rem;font-weight:600;color:#fff;}
+.user-info .role{font-size:.75rem;color:var(--muted);}
+
+/* MAIN LAYOUT */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;height:100vh;}
+
+/* CHAT HEADER */
+.chat-header{padding:1.2rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;background:var(--bg2);}
+.aria-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6366f1,var(--accent));display:flex;align-items:center;justify-content:center;font-size:1.2rem;position:relative;}
+.online-dot{position:absolute;bottom:2px;right:2px;width:10px;height:10px;border-radius:50%;background:var(--success);border:2px solid var(--bg2);}
+.aria-info .name{font-family:'Syne',sans-serif;font-weight:700;color:#fff;font-size:1rem;}
+.aria-info .status{font-size:.78rem;color:var(--success);}
+.header-right{margin-left:auto;display:flex;gap:.5rem;}
+.icon-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.5rem .8rem;color:var(--muted);cursor:pointer;font-size:.82rem;transition:all .2s;}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* CHAT AREA */
+.chat-area{flex:1;overflow-y:auto;padding:2rem;display:flex;flex-direction:column;gap:1.2rem;}
+.chat-area::-webkit-scrollbar{width:4px;}
+.chat-area::-webkit-scrollbar-track{background:transparent;}
+.chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* MESSAGES */
+.msg{display:flex;gap:.8rem;max-width:75%;animation:msgIn .3s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.msg.aria .msg-avatar{background:linear-gradient(135deg,#6366f1,var(--accent));}
+.msg.user .msg-avatar{background:linear-gradient(135deg,var(--accent),#0ea5e9);color:#080c14;font-weight:700;}
+.msg-bubble{padding:.85rem 1.1rem;border-radius:12px;font-size:.9rem;line-height:1.6;}
+.msg.aria .msg-bubble{background:var(--bg2);border:1px solid var(--border);border-top-left-radius:4px;color:var(--text);}
+.msg.user .msg-bubble{background:var(--accent);color:#080c14;font-weight:500;border-top-right-radius:4px;}
+.msg-time{font-size:.7rem;color:var(--muted);margin-top:.3rem;text-align:right;}
+.msg.aria .msg-time{text-align:left;}
+
+/* TYPING */
+.typing-indicator{display:none;align-items:center;gap:.8rem;}
+.typing-indicator.show{display:flex;}
+.typing-bubble{background:var(--bg2);border:1px solid var(--border);border-radius:12px;border-top-left-radius:4px;padding:.75rem 1rem;display:flex;gap:.3rem;align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+
+/* QUICK REPLIES */
+.quick-replies{display:flex;gap:.5rem;flex-wrap:wrap;padding:0 2rem .8rem;}
+.quick-btn{background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:.4rem 1rem;font-size:.8rem;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.quick-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* INPUT */
+.chat-input-area{padding:1rem 2rem 1.5rem;border-top:1px solid var(--border);background:var(--bg);}
+.input-row{display:flex;gap:.75rem;align-items:flex-end;}
+.input-box{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.92rem;outline:none;resize:none;max-height:120px;transition:border-color .2s;line-height:1.5;}
+.input-box:focus{border-color:var(--accent);}
+.input-box::placeholder{color:var(--muted);}
+.send-btn{width:44px;height:44px;background:var(--accent);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .2s;flex-shrink:0;}
+.send-btn:hover{background:#fff;}
+.send-btn:disabled{opacity:.4;cursor:not-allowed;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">Sentinel<span>AI</span></div>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+  <a class="nav-item" href="detect.html"><span class="nav-icon">🎯</span>Threat Detection</a>
+  <a class="nav-item active" href="agent.html"><span class="nav-icon">🤖</span>AI Agent</a>
+  <a class="nav-item" href="emergency.html"><span class="nav-icon">🆘</span>Emergency Contacts</a>
+  <a class="nav-item" href="booking.html"><span class="nav-icon">📅</span>Book a Session</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="avatar">U</div>
+      <div class="user-info"><div class="name">User</div><div class="role">Free Plan</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <!-- HEADER -->
+  <div class="chat-header">
+    <div class="aria-avatar">🤖<div class="online-dot"></div></div>
+    <div class="aria-info">
+      <div class="name">ARIA — Safety Agent</div>
+      <div class="status">● Online · Here to help</div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" onclick="clearChat()">🗑 Clear Chat</button>
+      <button class="icon-btn" onclick="window.location.href='emergency.html'">🆘 Emergency</button>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="chat-area" id="chat-area">
+    <div class="msg aria">
+      <div class="msg-avatar">🤖</div>
+      <div>
+        <div class="msg-bubble">Hi, I'm <strong>ARIA</strong> — your AI Safety Agent. I'm here to provide support, answer questions about online safety, and help you navigate difficult situations.<br/><br/>How are you feeling today? Is there something specific on your mind?</div>
+        <div class="msg-time">Just now</div>
+      </div>
+    </div>
+    <div class="typing-indicator" id="typing">
+      <div class="msg-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,var(--accent));display:flex;align-items:center;justify-content:center;">🤖</div>
+      <div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>
+  </div>
+
+  <!-- QUICK REPLIES -->
+  <div class="quick-replies" id="quick-replies">
+    <div class="quick-btn" onclick="sendQuick(this)">I'm feeling anxious</div>
+    <div class="quick-btn" onclick="sendQuick(this)">I saw harmful content online</div>
+    <div class="quick-btn" onclick="sendQuick(this)">How does threat detection work?</div>
+    <div class="quick-btn" onclick="sendQuick(this)">I need emergency help</div>
+    <div class="quick-btn" onclick="sendQuick(this)">I want to talk to someone</div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="chat-input-area">
+    <div class="input-row">
+      <textarea class="input-box" id="user-input" placeholder="Type a message to ARIA..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const API = 'http://localhost:5000/chat';
+let history = [];
+
+const SYSTEM_PROMPT = `You are ARIA (AI Risk & Intervention Agent), a compassionate and professional AI safety agent for SentinelAI — a platform that detects threats like hate speech, extremism, suicide risk, and fake news on social media.
+
+Your role is to:
+- Provide emotional support and a safe space to talk
+- Help users understand online threats and how to stay safe
+- Offer guidance on dealing with harmful content they've encountered
+- Suggest professional help or emergency contacts when needed
+- Explain how the SentinelAI platform works
+
+Rules:
+- Always be warm, empathetic, and non-judgmental
+- If someone expresses suicidal thoughts, gently encourage them to call iCall (9152987821) or Vandrevala (1860-2662-345)
+- Keep responses concise — 2 to 4 sentences unless detail is needed
+- Never diagnose medical conditions
+- If asked something outside your scope, redirect kindly`;
+
+function getTime(){
+  return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function addMessage(role, text){
+  const area = document.getElementById('chat-area');
+  const typing = document.getElementById('typing');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const avatarContent = role==='user' ? 'U' : '🤖';
+  div.innerHTML = `
+    <div class="msg-avatar">${avatarContent}</div>
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g,'<br/>')}</div>
+      <div class="msg-time">${getTime()}</div>
+    </div>`;
+  area.insertBefore(div, typing);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping(show){
+  const t = document.getElementById('typing');
+  t.classList.toggle('show', show);
+  const area = document.getElementById('chat-area');
+  area.scrollTop = area.scrollHeight;
+}
+
+async function sendMessage(){
+  const input = document.getElementById('user-input');
+  const text  = input.value.trim();
+  if(!text) return;
+
+  // Hide quick replies after first message
+  document.getElementById('quick-replies').style.display='none';
+
+  addMessage('user', text);
+  history.push({role:'user', content: text});
+  input.value='';
+  input.style.height='auto';
+  document.getElementById('send-btn').disabled=true;
+  showTyping(true);
+
+  try{
+    const res = await fetch('http://localhost:5000/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: text, history, system: SYSTEM_PROMPT})
+    });
+    const data = await res.json();
+    const reply = data.reply || "I'm here for you. Could you tell me more?";
+    showTyping(false);
+    addMessage('aria', reply);
+    history.push({role:'assistant', content: reply});
+  }catch(e){
+    // Fallback responses when API unavailable
+    showTyping(false);
+    const fallbacks = [
+      "I'm here to listen. Please tell me more about what you're going through.",
+      "That sounds difficult. You don't have to face this alone — I'm here.",
+      "Thank you for sharing that with me. Would you like to talk more, or would emergency contacts help?",
+      "I understand. If you're in crisis, please reach out to iCall at 9152987821 — they're available 24/7."
+    ];
+    const reply = fallbacks[Math.floor(Math.random()*fallbacks.length)];
+    addMessage('aria', reply);
+    history.push({role:'assistant', content: reply});
+  }finally{
+    document.getElementById('send-btn').disabled=false;
+  }
+}
+
+function sendQuick(el){
+  document.getElementById('user-input').value = el.textContent;
+  sendMessage();
+}
+
+function handleKey(e){
+  if(e.key==='Enter' && !e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+
+function clearChat(){
+  history=[];
+  const area = document.getElementById('chat-area');
+  // Keep only first welcome message and typing indicator
+  const msgs = area.querySelectorAll('.msg:not(:first-child)');
+  msgs.forEach(m=>m.remove());
+  document.getElementById('quick-replies').style.display='flex';
+}
+</script>
+</body>
+</html>

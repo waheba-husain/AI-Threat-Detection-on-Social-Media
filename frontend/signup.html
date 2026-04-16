@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelAI — Sign Up</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080c14;--bg2:#0d1320;--bg3:#111827;--accent:#38bdf8;--text:#e2e8f0;--muted:#64748b;--border:rgba(56,189,248,0.15);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(56,189,248,.08) 0%,transparent 70%);pointer-events:none;}
+.container{width:100%;max-width:440px;padding:2rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#fff;text-align:center;margin-bottom:2rem;}
+.logo span{color:var(--accent);}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2.5rem;}
+.tabs{display:flex;background:var(--bg);border-radius:8px;padding:4px;margin-bottom:2rem;}
+.tab{flex:1;text-align:center;padding:.6rem;border-radius:6px;cursor:pointer;font-size:.9rem;font-weight:500;color:var(--muted);transition:all .2s;}
+.tab.active{background:var(--accent);color:#080c14;font-weight:700;}
+.form-group{margin-bottom:1.2rem;}
+label{display:block;font-size:.82rem;font-weight:500;color:var(--muted);margin-bottom:.5rem;}
+input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;transition:border-color .2s;outline:none;}
+input:focus{border-color:var(--accent);}
+input::placeholder{color:var(--muted);}
+.btn{width:100%;background:var(--accent);color:#080c14;border:none;border-radius:8px;padding:.85rem;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;margin-top:.5rem;box-shadow:0 0 20px rgba(56,189,248,.25);}
+.btn:hover{background:#fff;}
+.footer-link{text-align:center;margin-top:1.2rem;font-size:.85rem;color:var(--muted);}
+.footer-link a{color:var(--accent);text-decoration:none;cursor:pointer;}
+.back{display:block;text-align:center;margin-top:1.5rem;color:var(--muted);font-size:.85rem;text-decoration:none;}
+.back:hover{color:var(--accent);}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="container">
+  <div class="logo">Sentinel<span>AI</span></div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" id="tab-signup" onclick="switchTab('signup')">Sign Up</div>
+      <div class="tab" id="tab-signin" onclick="switchTab('signin')">Sign In</div>
+    </div>
+
+    <div id="signup-form">
+      <div class="form-group"><label>Full Name</label><input type="text" placeholder="Your name"/></div>
+      <div class="form-group"><label>Email Address</label><input type="email" placeholder="you@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" placeholder="Min. 8 characters"/></div>
+      <div class="form-group"><label>Confirm Password</label><input type="password" placeholder="Repeat password"/></div>
+      <button class="btn" onclick="window.location.href='dashboard.html'">Create Account →</button>
+      <div class="footer-link">Already have an account? <a onclick="switchTab('signin')">Sign In</a></div>
+    </div>
+
+    <div id="signin-form" class="hidden">
+      <div class="form-group"><label>Email Address</label><input type="email" placeholder="you@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" placeholder="Your password"/></div>
+      <button class="btn" onclick="window.location.href='dashboard.html'">Sign In →</button>
+      <div class="footer-link">No account? <a onclick="switchTab('signup')">Sign Up</a></div>
+    </div>
+  </div>
+  <a href="index.html" class="back">← Back to Home</a>
+</div>
+<script>
+function switchTab(t){
+  document.getElementById('signup-form').classList.toggle('hidden',t!=='signup');
+  document.getElementById('signin-form').classList.toggle('hidden',t!=='signin');
+  document.getElementById('tab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('tab-signin').classList.toggle('active',t==='signin');
+}
+</script>
+</body>
+</html>

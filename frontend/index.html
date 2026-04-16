@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelAI — Threat Detection on Social Media</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #080c14;
+  --bg2:      #0d1320;
+  --bg3:      #111827;
+  --navy:     #0f172a;
+  --accent:   #38bdf8;
+  --accent2:  #0ea5e9;
+  --danger:   #f43f5e;
+  --success:  #10b981;
+  --warn:     #f59e0b;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --border:   rgba(56,189,248,0.15);
+  --glow:     rgba(56,189,248,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.4;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.2rem 4rem;
+  background:rgba(8,12,20,0.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:1.3rem;
+  color:#fff;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:.5rem;
+}
+.logo span{color:var(--accent);}
+.logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+
+nav ul{list-style:none;display:flex;gap:2.5rem;}
+nav ul a{
+  color:var(--muted);text-decoration:none;
+  font-size:.9rem;font-weight:500;letter-spacing:.02em;
+  transition:color .2s;
+}
+nav ul a:hover{color:var(--accent);}
+.nav-cta{
+  background:var(--accent);color:#080c14!important;
+  padding:.5rem 1.2rem;border-radius:6px;
+  font-weight:600!important;transition:all .2s!important;
+}
+.nav-cta:hover{background:#fff;color:#080c14!important;}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:8rem 4rem 4rem;
+  position:relative;
+  text-align:center;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(56,189,248,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,189,248,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 40%,#000 40%,transparent 100%);
+}
+.hero-glow{
+  position:absolute;
+  top:20%;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(56,189,248,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-content{position:relative;z-index:1;max-width:860px;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(56,189,248,.1);
+  border:1px solid var(--border);
+  border-radius:100px;
+  padding:.35rem 1rem;
+  font-size:.8rem;font-weight:500;color:var(--accent);
+  margin-bottom:2rem;
+  animation:fadeUp .6s ease both;
+}
+.hero-badge::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 6px var(--accent);
+  animation:pulse 2s infinite;
+}
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(2.8rem,6vw,5.2rem);
+  font-weight:800;line-height:1.05;
+  letter-spacing:-.04em;
+  color:#fff;
+  margin-bottom:1.5rem;
+  animation:fadeUp .6s .1s ease both;
+}
+h1 .accent{color:var(--accent);}
+h1 .danger{color:var(--danger);}
+.hero p{
+  font-size:1.15rem;color:var(--muted);
+  max-width:560px;margin:0 auto 2.5rem;
+  font-weight:300;
+  animation:fadeUp .6s .2s ease both;
+}
+.hero-btns{
+  display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;
+  animation:fadeUp .6s .3s ease both;
+}
+.btn-primary{
+  background:var(--accent);color:#080c14;
+  padding:.85rem 2rem;border-radius:8px;
+  font-weight:700;font-size:1rem;
+  text-decoration:none;
+  transition:all .2s;
+  box-shadow:0 0 24px rgba(56,189,248,.3);
+}
+.btn-primary:hover{background:#fff;box-shadow:0 0 32px rgba(255,255,255,.2);}
+.btn-secondary{
+  background:transparent;color:var(--text);
+  padding:.85rem 2rem;border-radius:8px;
+  font-weight:500;font-size:1rem;
+  text-decoration:none;
+  border:1px solid var(--border);
+  transition:all .2s;
+}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── STATS ── */
+.stats{
+  display:flex;gap:3rem;justify-content:center;
+  margin-top:4rem;padding-top:3rem;
+  border-top:1px solid var(--border);
+  animation:fadeUp .6s .4s ease both;
+}
+.stat-item{text-align:center;}
+.stat-num{
+  font-family:'Syne',sans-serif;
+  font-size:2rem;font-weight:800;color:#fff;
+}
+.stat-num span{color:var(--accent);}
+.stat-label{font-size:.8rem;color:var(--muted);margin-top:.2rem;}
+
+/* ── SECTION BASE ── */
+section{padding:6rem 4rem;position:relative;}
+.section-tag{
+  font-size:.75rem;font-weight:600;
+  color:var(--accent);letter-spacing:.15em;
+  text-transform:uppercase;margin-bottom:1rem;
+}
+.section-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.8rem,3.5vw,2.8rem);
+  font-weight:800;color:#fff;
+  letter-spacing:-.03em;line-height:1.1;
+  margin-bottom:1rem;
+}
+.section-sub{color:var(--muted);max-width:520px;font-weight:300;}
+
+/* ── FEATURES ── */
+#features{background:var(--bg2);}
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:1.5rem;margin-top:3rem;
+}
+.feature-card{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:2rem;
+  transition:all .3s;
+  position:relative;overflow:hidden;
+}
+.feature-card::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--glow),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.feature-card:hover{border-color:var(--accent);transform:translateY(-4px);}
+.feature-card:hover::before{opacity:1;}
+.feature-icon{
+  width:48px;height:48px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;margin-bottom:1.2rem;
+}
+.feature-card h3{
+  font-family:'Syne',sans-serif;
+  font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:.5rem;
+}
+.feature-card p{font-size:.9rem;color:var(--muted);line-height:1.6;}
+.tag{
+  display:inline-block;margin-top:1rem;
+  font-size:.7rem;font-weight:600;letter-spacing:.08em;
+  padding:.2rem .7rem;border-radius:100px;
+  text-transform:uppercase;
+}
+.tag-live{background:rgba(16,185,129,.15);color:var(--success);}
+.tag-ai{background:rgba(56,189,248,.15);color:var(--accent);}
+.tag-safe{background:rgba(244,63,94,.15);color:var(--danger);}
+
+/* ── HOW IT WORKS ── */
+.steps{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:2rem;margin-top:3rem;position:relative;
+}
+.steps::before{
+  content:'';
+  position:absolute;top:40px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+}
+.step{text-align:center;padding:1.5rem;}
+.step-num{
+  width:56px;height:56px;border-radius:50%;
+  border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.2rem;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
+  color:var(--accent);
+  background:rgba(56,189,248,.08);
+  box-shadow:0 0 16px rgba(56,189,248,.15);
+}
+.step h4{
+  font-family:'Syne',sans-serif;font-weight:700;
+  color:#fff;margin-bottom:.5rem;
+}
+.step p{font-size:.88rem;color:var(--muted);}
+
+/* ── ABOUT ── */
+#about{background:var(--bg2);}
+.about-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:4rem;align-items:center;margin-top:3rem;
+}
+.about-visual{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:16px;padding:2rem;
+  font-family:'DM Sans',sans-serif;
+}
+.terminal-bar{
+  display:flex;gap:.5rem;margin-bottom:1.2rem;
+}
+.terminal-bar span{
+  width:12px;height:12px;border-radius:50%;
+}
+.t1{background:#f43f5e;}
+.t2{background:#f59e0b;}
+.t3{background:#10b981;}
+.terminal-line{
+  font-size:.82rem;line-height:2;color:var(--muted);
+  font-family:monospace;
+}
+.terminal-line .green{color:var(--success);}
+.terminal-line .blue{color:var(--accent);}
+.terminal-line .red{color:var(--danger);}
+.terminal-line .yellow{color:var(--warn);}
+.about-text p{color:var(--muted);margin-bottom:1rem;font-weight:300;}
+.about-pills{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.5rem;}
+.pill{
+  background:rgba(56,189,248,.08);
+  border:1px solid var(--border);
+  border-radius:100px;padding:.3rem .9rem;
+  font-size:.8rem;color:var(--accent);font-weight:500;
+}
+
+/* ── CTA ── */
+.cta-section{
+  text-align:center;padding:6rem 4rem;
+  background:linear-gradient(135deg,var(--bg2),var(--bg));
+  border-top:1px solid var(--border);
+}
+.cta-section .section-title{margin:0 auto 1rem;}
+.cta-section p{color:var(--muted);margin-bottom:2.5rem;font-weight:300;}
+
+/* ── FOOTER ── */
+footer{
+  padding:2rem 4rem;
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--bg);
+}
+footer p{font-size:.85rem;color:var(--muted);}
+footer a{color:var(--accent);text-decoration:none;font-size:.85rem;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.reveal{opacity:0;transform:translateY(24px);transition:all .6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  nav{padding:1rem 1.5rem;}
+  nav ul{display:none;}
+  .hero{padding:6rem 1.5rem 3rem;}
+  section{padding:4rem 1.5rem;}
+  .stats{flex-wrap:wrap;gap:1.5rem;}
+  .about-grid{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:1rem;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Sentinel<span>AI</span>
+  </div>
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="signup.html" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🛡️ AI-Powered Social Media Safety</div>
+    <h1>Detect <span class="danger">Threats</span> Before<br/>They <span class="accent">Escalate</span></h1>
+    <p>SentinelAI uses fine-tuned RoBERTa to detect hate speech, extremism, suicide risk, and misinformation in real time — keeping communities safer.</p>
+    <div class="hero-btns">
+      <a href="signup.html" class="btn-primary">Start Free →</a>
+      <a href="#how" class="btn-secondary">See How It Works</a>
+    </div>
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-num">4<span>+</span></div>
+        <div class="stat-label">Threat Categories</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">~<span>85</span>%</div>
+        <div class="stat-label">Model Accuracy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><span>&lt;</span>1s</div>
+        <div class="stat-label">Detection Speed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">24<span>/7</span></div>
+        <div class="stat-label">Always On</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-tag">Features</div>
+  <div class="section-title">Everything You Need<br/>to Stay Safe Online</div>
+  <p class="section-sub">A complete platform for detecting, managing, and responding to digital threats.</p>
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(244,63,94,.12);">🎯</div>
+      <h3>Threat Detection</h3>
+      <p>Paste any text and instantly classify it across 4 categories — hate speech, suicide, extremism, and fake news — with confidence scores.</p>
+      <span class="tag tag-live">Live</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(56,189,248,.12);">🤖</div>
+      <h3>AI Safety Agent</h3>
+      <p>Chat with our AI agent trained to provide mental health support, de-escalation guidance, and crisis resources in real time.</p>
+      <span class="tag tag-ai">AI Powered</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(16,185,129,.12);">📊</div>
+      <h3>Analytics Dashboard</h3>
+      <p>Track threat patterns, view detection history, and monitor trends across your monitored content with clean visual reports.</p>
+      <span class="tag tag-live">Live</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(245,158,11,.12);">🆘</div>
+      <h3>Emergency Contacts</h3>
+      <p>Instantly access curated emergency helplines, crisis centers, and mental health resources organized by category and region.</p>
+      <span class="tag tag-safe">Safety</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(139,92,246,.12);">📅</div>
+      <h3>Book a Session</h3>
+      <p>Connect with certified mental health professionals and counselors directly through the platform for follow-up support.</p>
+      <span class="tag tag-ai">Support</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(56,189,248,.12);">🔐</div>
+      <h3>Secure & Private</h3>
+      <p>All analyses are encrypted. We never store your content beyond the session. Your privacy is our baseline, not a feature.</p>
+      <span class="tag tag-safe">Privacy</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-tag">Process</div>
+  <div class="section-title">How It Works</div>
+  <p class="section-sub">Three steps from input to actionable insight.</p>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h4>Submit Text</h4>
+      <p>Paste a social media post, comment, or any text you want analysed into the detection panel.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h4>AI Analyses</h4>
+      <p>Our fine-tuned RoBERTa model processes the text and scores it across all threat categories in under a second.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h4>Get Results</h4>
+      <p>Receive a detailed breakdown with prediction, confidence score, and recommended next steps.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h4>Take Action</h4>
+      <p>Use emergency contacts, book a session, or chat with the AI agent based on your results.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid reveal">
+    <div class="about-text">
+      <div class="section-tag">About</div>
+      <div class="section-title">Built for the<br/>Safety Challenge</div>
+      <p>SentinelAI is a final year engineering project built to address the growing crisis of harmful content on social media — from hate speech to extremist recruitment to suicide risk signals.</p>
+      <p>We fine-tuned a RoBERTa transformer model on a balanced dataset of 4 threat categories, building a full-stack platform for detection, reporting, and response.</p>
+      <div class="about-pills">
+        <span class="pill">RoBERTa</span>
+        <span class="pill">PyTorch</span>
+        <span class="pill">Flask API</span>
+        <span class="pill">NLP</span>
+        <span class="pill">Transformers</span>
+        <span class="pill">Python</span>
+      </div>
+    </div>
+    <div class="about-visual">
+      <div class="terminal-bar">
+        <span class="t1"></span><span class="t2"></span><span class="t3"></span>
+      </div>
+      <div class="terminal-line"><span class="green">✓</span> Model loaded: roberta-base</div>
+      <div class="terminal-line"><span class="blue">→</span> Input: "I hate everyone in this group"</div>
+      <div class="terminal-line"><span class="yellow">⚡</span> Processing...</div>
+      <div class="terminal-line"><span class="red">⚠</span> Prediction: <span class="red">HATE_SPEECH</span></div>
+      <div class="terminal-line"><span class="green">✓</span> Confidence: <span class="green">91.4%</span></div>
+      <div class="terminal-line" style="margin-top:.8rem;">
+        <span class="blue">scores:</span>
+      </div>
+      <div class="terminal-line">&nbsp;&nbsp;hate_speech: <span class="red">91.4%</span></div>
+      <div class="terminal-line">&nbsp;&nbsp;extremism: <span class="yellow">5.2%</span></div>
+      <div class="terminal-line">&nbsp;&nbsp;suicide: <span class="blue">2.1%</span></div>
+      <div class="terminal-line">&nbsp;&nbsp;fake_news: <span class="green">1.3%</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="section-tag">Get Started</div>
+  <div class="section-title">Ready to Make<br/>Your Platform Safer?</div>
+  <p>Join SentinelAI and start detecting threats in seconds.</p>
+  <a href="signup.html" class="btn-primary">Create Free Account →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 SentinelAI — AI Threat Detection on Social Media</p>
+  <a href="signup.html">Sign Up →</a>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
